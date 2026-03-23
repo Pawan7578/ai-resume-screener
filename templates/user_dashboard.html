@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard — AI Resume Matcher{% endblock %}
+{% block body %}
+<nav class="navbar">
+    <a href="/user/dashboard" class="navbar-brand">
+        <div class="logo-icon">📊</div> AI Resume Matcher
+    </a>
+    <div class="navbar-nav">
+        <div class="nav-user">
+            <div class="avatar">{{ username[0].upper() }}</div>
+            {{ username }}
+        </div>
+        <a href="/user/logout" class="nav-badge">Sign Out</a>
+    </div>
+</nav>
+
+<div class="page-sm">
+    <div class="page-header">
+        <h1>👋 Welcome, {{ username }}</h1>
+        <p>Check how well your resume matches any job description</p>
+    </div>
+
+    <div class="card mb-24">
+        <div class="card-title">🔍 Analyze My Resume</div>
+        <div class="card-subtitle">Upload your resume and provide a job description to get your ATS score and improvement tips</div>
+
+        <form action="/user/analyze" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label class="form-label">Job Description</label>
+                <div class="tab-bar">
+                    <button type="button" class="tab-btn active" onclick="jdTab('paste',this)">📝 Paste Text</button>
+                    <button type="button" class="tab-btn"        onclick="jdTab('file',this)">📁 Upload File</button>
+                </div>
+                <div class="tab-panel active" id="jd-paste">
+                    <textarea class="form-textarea" name="jd_text" style="min-height:120px"
+                        placeholder="Paste the job description here…&#10;&#10;We are looking for a Python developer with machine learning, SQL, Flask..."></textarea>
+                </div>
+                <div class="tab-panel" id="jd-file">
+                    <input class="file-drop" type="file" name="jd_file" accept=".txt">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Your Resume <span style="font-weight:400;color:var(--text-faint)">— PDF or DOCX</span></label>
+                <input class="file-drop" type="file" name="resume" accept=".pdf,.docx" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full">🚀 Analyze My Resume</button>
+        </form>
+    </div>
+
+    <!-- HISTORY -->
+    {% if history %}
+    <div class="card">
+        <div class="card-title">📋 My History</div>
+        <div class="card-subtitle">Previous analyses — click any to review</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+        {% for h in history %}
+        <div style="padding:14px 16px;border-radius:10px;background:var(--surface-2);border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <div>
+                <div style="font-weight:600;font-size:14px;margin-bottom:3px">
+                    {{ h.resume_name.replace('.pdf','').replace('.docx','') }}
+                </div>
+                <div class="text-sm text-muted">
+                    {{ h.ml_category }} &nbsp;·&nbsp; {{ h.decision }} &nbsp;·&nbsp; {{ h.created_at[:16] }}
+                </div>
+            </div>
+            <span class="score-pill {% if h.final_score >= 65 %}score-high{% elif h.final_score >= 40 %}score-mid{% else %}score-low{% endif %}" style="font-size:16px;padding:6px 14px;font-weight:700">
+                {{ h.final_score }}%
+            </span>
+        </div>
+        {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="text-align:center;padding:40px">
+        <div style="font-size:40px;margin-bottom:12px">📭</div>
+        <div style="font-weight:600;color:var(--text-muted);margin-bottom:6px">No analyses yet</div>
+        <div class="text-sm text-muted">Upload your resume above to get started</div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function jdTab(type, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ['paste','file'].forEach(t => document.getElementById('jd-'+t).classList.toggle('active', t===type));
+}
+</script>
+{% endblock %}

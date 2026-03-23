@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Results — AI Resume Matcher{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+{% block body %}
+<nav class="navbar">
+    <a href="/dashboard" class="navbar-brand">
+        <div class="logo-icon">📊</div> AI Resume Matcher
+    </a>
+    <div class="navbar-nav">
+        <a href="/dashboard"    class="nav-link">🔄 New Analysis</a>
+        <a href="/model-report" class="nav-link">📊 Models</a>
+        <a href="/logout"       class="nav-badge">Sign Out</a>
+    </div>
+</nav>
+
+<div class="page">
+
+    <!-- TOP CANDIDATE BANNER -->
+    {% if top %}
+    <div class="alert alert-success mb-24" style="padding:16px 20px;font-size:15px;border-radius:12px;">
+        🏆 <strong>Top Candidate: {{ top.name.replace('.pdf','').replace('.docx','') }}</strong>
+        &nbsp;·&nbsp; Final Score: <strong>{{ top.final }}%</strong>
+        &nbsp;·&nbsp; ML Category: <strong>{{ top.ml_category }}</strong>
+        &nbsp;·&nbsp; {{ top.decision }}
+    </div>
+    {% endif %}
+
+    <!-- ACTION ROW -->
+    <div class="flex gap-8 mb-24" style="flex-wrap:wrap">
+        <a href="/download"     class="btn btn-success">⬇ Excel Report</a>
+        <a href="/dashboard"    class="btn btn-ghost">🔄 New Analysis</a>
+        <a href="/model-report" class="btn btn-ghost">📊 Model Report</a>
+    </div>
+
+    <div class="page-header">
+        <h1>🏅 Candidate Rankings</h1>
+        <p>{{ results|length }} candidate{% if results|length != 1 %}s{% endif %} analyzed and ranked by final score</p>
+    </div>
+
+    <!-- RESULTS TABLE -->
+    <div class="table-wrap mb-24">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Candidate</th>
+                    <th>AI Score</th>
+                    <th>ATS Score</th>
+                    <th>Final Score</th>
+                    <th>ML Category</th>
+                    <th>Confidence</th>
+                    <th>Skills Found</th>
+                    <th>Missing Skills</th>
+                    <th>Suggestion</th>
+                    <th>Summary</th>
+                    <th>Roles</th>
+                    <th>Experience</th>
+                    <th>Decision</th>
+                    <th>PDF</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for r in results %}
+            <tr {% if loop.index == 1 %}class="top-row"{% endif %}>
+                <td>
+                    {% if loop.index == 1 %}<span style="font-size:16px">🥇</span>
+                    {% elif loop.index == 2 %}<span style="font-size:16px">🥈</span>
+                    {% elif loop.index == 3 %}<span style="font-size:16px">🥉</span>
+                    {% else %}<span class="text-muted">{{ loop.index }}</span>{% endif %}
+                </td>
+                <td><strong>{{ r.name.replace('.pdf','').replace('.docx','') }}</strong></td>
+                <td>
+                    <span class="score-pill {% if r.ai >= 65 %}score-high{% elif r.ai >= 40 %}score-mid{% else %}score-low{% endif %}">
+                        {{ r.ai }}%
+                    </span>
+                </td>
+                <td>
+                    <span class="score-pill {% if r.ats >= 65 %}score-high{% elif r.ats >= 40 %}score-mid{% else %}score-low{% endif %}">
+                        {{ r.ats }}%
+                    </span>
+                </td>
+                <td>
+                    <span class="score-pill {% if r.final >= 65 %}score-high{% elif r.final >= 40 %}score-mid{% else %}score-low{% endif %}" style="font-size:14px;padding:5px 12px">
+                        <strong>{{ r.final }}%</strong>
+                    </span>
+                </td>
+                <td><span class="badge badge-blue">{{ r.ml_category }}</span></td>
+                <td><span class="text-muted">{{ r.ml_confidence }}%</span></td>
+                <td style="max-width:180px;font-size:12px;color:var(--text-muted)">{{ r.skills }}</td>
+                <td style="max-width:160px;font-size:12px;color:var(--danger)">{{ r.missing }}</td>
+                <td style="max-width:160px;font-size:12px;color:var(--success)">{{ r.suggestion }}</td>
+                <td style="max-width:160px;font-size:12px;color:#1d4ed8">{{ r.summary }}</td>
+                <td style="font-size:12px;font-weight:600;color:#6d28d9">{{ r.roles }}</td>
+                <td><span class="badge badge-gray">{{ r.exp }}</span></td>
+                <td><strong>{{ r.decision }}</strong></td>
+                <td>
+                    <button onclick="downloadPDF({{ r | tojson }})" class="btn btn-ghost" style="padding:6px 12px;font-size:12px">
+                        ⬇ PDF
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- CHART -->
+    <div class="card">
+        <div class="card-title">📊 Score Comparison</div>
+        <div class="card-subtitle">AI Score vs ATS Score vs Final Score for all candidates</div>
+        <canvas id="scoreChart" style="max-height:320px"></canvas>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const names  = [{% for r in results %}"{{ r.name.replace('.pdf','').replace('.docx','') }}",{% endfor %}];
+const aiS    = [{% for r in results %}{{ r.ai }},{% endfor %}];
+const atsS   = [{% for r in results %}{{ r.ats }},{% endfor %}];
+const finalS = [{% for r in results %}{{ r.final }},{% endfor %}];
+
+new Chart(document.getElementById('scoreChart'), {
+    type: 'bar',
+    data: {
+        labels: names,
+        datasets: [
+            { label: 'AI Score %',    data: aiS,    backgroundColor: 'rgba(79,70,229,0.7)',  borderRadius: 5 },
+            { label: 'ATS Score %',   data: atsS,   backgroundColor: 'rgba(245,158,11,0.7)', borderRadius: 5 },
+            { label: 'Final Score %', data: finalS, backgroundColor: 'rgba(16,185,129,0.85)',borderRadius: 5 }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'top' } },
+        scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } } }
+    }
+});
+
+function downloadPDF(candidate) {
+    fetch('/download/candidate-pdf', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(candidate)
+    })
+    .then(r => r.ok ? r.blob() : r.text().then(t => { showToast(t, 'error'); return null; }))
+    .then(blob => {
+        if (!blob) return;
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = candidate.name.replace('.pdf','').replace('.docx','') + '_Report.pdf';
+        a.click();
+        showToast('PDF downloaded!');
+    });
+}
+</script>
+{% endblock %}

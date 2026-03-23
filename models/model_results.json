@@ -1,0 +1,30 @@
+{
+  "best_model": "SVM",
+  "sklearn_version": "1.7.2",
+  "results": {
+    "Naive Bayes": {
+      "accuracy": 39.03,
+      "precision": 52.52,
+      "recall": 39.03,
+      "f1": 35.17
+    },
+    "Logistic Regression": {
+      "accuracy": 63.98,
+      "precision": 64.28,
+      "recall": 63.98,
+      "f1": 62.99
+    },
+    "SVM": {
+      "accuracy": 69.82,
+      "precision": 70.74,
+      "recall": 69.82,
+      "f1": 68.25
+    },
+    "KNN": {
+      "accuracy": 27.97,
+      "precision": 37.61,
+      "recall": 27.97,
+      "f1": 27.87
+    }
+  }
+}

@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+{% block title %}Train Models — AI Resume Matcher{% endblock %}
+{% block body %}
+<nav class="navbar">
+    <a href="/dashboard" class="navbar-brand">
+        <div class="logo-icon">📊</div> AI Resume Matcher
+    </a>
+    <div class="navbar-nav">
+        <a href="/dashboard" class="nav-link">← Dashboard</a>
+    </div>
+</nav>
+
+<div class="page-sm">
+    <div class="page-header">
+        <h1>🤖 Train ML Models</h1>
+        <p>Trains Naive Bayes, Logistic Regression, SVM and KNN on your resume dataset</p>
+    </div>
+
+    <div class="alert alert-info mb-24">
+        ⚡ <strong>Estimated time: 1–3 minutes</strong> — make sure <code style="font-family:monospace;background:rgba(0,0,0,0.06);padding:2px 6px;border-radius:4px">dataset/resume_dataset.csv</code> is in the project folder
+    </div>
+
+    <div class="card mb-24">
+        <div class="flex justify-between items-center mb-24">
+            <div>
+                <div class="card-title">Training Pipeline</div>
+                <div class="card-subtitle" id="status-label">Ready to start training</div>
+            </div>
+            <button id="start-btn" class="btn btn-primary" onclick="startTraining()">
+                🚀 Start Training
+            </button>
+        </div>
+
+        <!-- OVERALL PROGRESS -->
+        <div class="progress mb-24" style="height:10px">
+            <div class="progress-bar" id="overall-bar" style="width:0%;background:linear-gradient(90deg,var(--primary),var(--secondary))"></div>
+        </div>
+
+        <!-- STEPS -->
+        <div style="display:flex;flex-direction:column;gap:8px" id="steps">
+            <div class="step-row" id="s-load">  <div class="step-dot"></div><span>Load dataset</span></div>
+            <div class="step-row" id="s-clean"> <div class="step-dot"></div><span>Clean & preprocess text</span></div>
+            <div class="step-row" id="s-encode"><div class="step-dot"></div><span>Encode labels</span></div>
+            <div class="step-row" id="s-tfidf"> <div class="step-dot"></div><span>TF-IDF vectorization</span></div>
+            <div class="step-row" id="s-split"> <div class="step-dot"></div><span>Train / test split</span></div>
+            <div class="step-row" id="s-nb">    <div class="step-dot"></div><span>Train Naive Bayes</span></div>
+            <div class="step-row" id="s-lr">    <div class="step-dot"></div><span>Train Logistic Regression</span></div>
+            <div class="step-row" id="s-svm">   <div class="step-dot"></div><span>Train SVM</span></div>
+            <div class="step-row" id="s-knn">   <div class="step-dot"></div><span>Train KNN</span></div>
+            <div class="step-row" id="s-save">  <div class="step-dot"></div><span>Save best model</span></div>
+        </div>
+    </div>
+
+    <!-- RESULTS (hidden until done) -->
+    <div id="results-card" style="display:none">
+        <div class="card mb-16">
+            <div class="card-title">📊 Model Evaluation Results</div>
+            <div class="card-subtitle">All 4 models trained and compared on the test set</div>
+            <div class="table-wrap" style="margin-top:16px">
+                <table id="results-table">
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Accuracy</th>
+                            <th>Precision</th>
+                            <th>Recall</th>
+                            <th>F1 Score</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="alert alert-success" id="winner-box" style="font-size:15px;padding:16px 20px;border-radius:12px"></div>
+
+        <div class="flex gap-8 mt-16">
+            <a href="/dashboard"    class="btn btn-primary">📤 Analyze Resumes Now</a>
+            <a href="/model-report" class="btn btn-ghost">📊 Full Model Report</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head %}
+<style>
+.step-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--text-muted);
+    transition: all 0.25s;
+}
+.step-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--border-strong);
+    flex-shrink: 0;
+    transition: all 0.25s;
+}
+.step-row.active {
+    background: rgba(79,70,229,0.05);
+    border-color: rgba(79,70,229,0.3);
+    color: var(--primary);
+}
+.step-row.active .step-dot {
+    background: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.2);
+    animation: pulse 1.2s ease infinite;
+}
+.step-row.done {
+    background: rgba(16,185,129,0.05);
+    border-color: rgba(16,185,129,0.3);
+    color: var(--success);
+}
+.step-row.done .step-dot { background: var(--success); }
+.step-row.error {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: var(--danger);
+}
+@keyframes pulse {
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(1.4); }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const STEP_MAP = {
+    "Loading dataset":                      "s-load",
+    "Cleaning text":                        "s-clean",
+    "Encoding labels":                      "s-encode",
+    "Vectorizing with TF-IDF":             "s-tfidf",
+    "Splitting train":                      "s-split",
+};
+const MODEL_MAP = {
+    "Naive Bayes":          "s-nb",
+    "Logistic Regression":  "s-lr",
+    "SVM":                  "s-svm",
+    "KNN":                  "s-knn",
+};
+const TABLE_DATA = {};
+let bestF1 = 0, bestName = '';
+
+function setStep(id, state, extra='') {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('active','done','error');
+    el.classList.add(state);
+    if (state==='done' && extra) {
+        el.innerHTML = `<div class="step-dot"></div><span>${el.querySelector('span').textContent}</span>
+                        <span style="margin-left:auto;font-size:12px;opacity:0.7">${extra}</span>`;
+    }
+}
+
+function markPreviousActive(map) {
+    Object.values(map).forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.classList.contains('active')) el.classList.replace('active','done');
+    });
+}
+
+function addRow(name, acc, prec, rec, f1) {
+    TABLE_DATA[name] = {acc,prec,rec,f1};
+    if (f1 > bestF1) { bestF1 = f1; bestName = name; }
+    redrawTable();
+}
+
+function redrawTable() {
+    const tbody = document.getElementById('results-body');
+    tbody.innerHTML = '';
+    Object.entries(TABLE_DATA).forEach(([name,m]) => {
+        const isBest = name === bestName;
+        const tr = document.createElement('tr');
+        if (isBest) tr.className = 'top-row';
+        tr.innerHTML = `
+            <td><strong>${name}</strong></td>
+            <td>${m.acc}%</td><td>${m.prec}%</td><td>${m.rec}%</td>
+            <td><strong>${m.f1}%</strong></td>
+            <td>${isBest ? '<span class="badge badge-green">✓ Best</span>' : '<span class="text-muted">—</span>'}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function startTraining() {
+    const btn = document.getElementById('start-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Training...';
+
+    const es = new EventSource('/train/stream');
+    es.onmessage = e => {
+        const [type, ...rest] = e.data.split(':');
+        const payload = rest.join(':');
+
+        if (e.data === '__END__') {
+            es.close();
+            btn.textContent = '✅ Done!';
+            document.getElementById('status-label').textContent = 'All models trained and saved';
+            document.getElementById('overall-bar').style.width = '100%';
+            document.getElementById('results-card').style.display = 'block';
+            document.getElementById('results-card').scrollIntoView({behavior:'smooth'});
+            return;
+        }
+
+        if (type === 'step') {
+            document.getElementById('status-label').textContent = payload;
+            let pct = 10;
+            for (const [label, id] of Object.entries(STEP_MAP)) {
+                if (payload.includes(label)) {
+                    markPreviousActive(STEP_MAP);
+                    markPreviousActive(MODEL_MAP);
+                    setStep(id, 'active');
+                    break;
+                }
+                pct += 8;
+            }
+            if (payload.includes('Saving')) {
+                markPreviousActive(MODEL_MAP);
+                setStep('s-save','active');
+            }
+            document.getElementById('overall-bar').style.width = Math.min(90, pct) + '%';
+        }
+        else if (type === 'training') {
+            const id = MODEL_MAP[payload];
+            if (id) { markPreviousActive(MODEL_MAP); setStep(id,'active'); }
+            document.getElementById('status-label').textContent = 'Training ' + payload + '...';
+        }
+        else if (type === 'result') {
+            const [name,acc,prec,rec,f1] = payload.split('|');
+            addRow(name, parseFloat(acc), parseFloat(prec), parseFloat(rec), parseFloat(f1));
+        }
+        else if (type === 'done') {
+            const [name, f1] = payload.split('|');
+            setStep('s-save','done', name);
+            document.getElementById('winner-box').innerHTML =
+                `🏆 <strong>Best model: ${name}</strong> — F1 Score: <strong>${f1}%</strong><br>
+                 This model is now active and will be used for resume category prediction.`;
+        }
+        else if (type === 'error') {
+            document.getElementById('status-label').textContent = '❌ ' + payload;
+            btn.disabled = false;
+            btn.textContent = '🔄 Retry Training';
+            showToast(payload, 'error');
+        }
+    };
+
+    es.onerror = () => {
+        es.close();
+        btn.disabled = false;
+        btn.textContent = '🔄 Retry';
+        showToast('Connection lost — please retry', 'error');
+    };
+}
+</script>
+{% endblock %}

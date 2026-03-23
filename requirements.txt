@@ -1,0 +1,15 @@
+flask
+python-dotenv
+pandas
+numpy
+openpyxl
+scikit-learn
+nltk
+sentence-transformers
+PyPDF2
+pypdf
+python-docx
+matplotlib
+seaborn
+reportlab
+pdfminer.six

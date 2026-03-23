@@ -1,0 +1,121 @@
+Job Title: Junior Full-Stack Developer (Fresher)
+Location: Bangalore, Karnataka
+Experience: 0–1 Year
+Qualification: MCA / Master's Degree in Computer Applications or Computer Science
+
+---
+
+About the Role:
+
+We are seeking a motivated Junior Full-Stack Developer with a strong foundation in programming, web development, and database management. The ideal candidate holds a Master's Degree (PG) in Computer Applications or Computer Science, has hands-on project experience, and is passionate about building scalable web and mobile applications.
+
+---
+
+Key Responsibilities:
+
+- Develop and maintain web applications using HTML, CSS, and JavaScript for front-end development.
+- Build and manage back-end services using Node.js and PHP.
+- Design and manage databases using MySQL and MongoDB.
+- Write clean and efficient code in Python, C, C++, JAVA, and PHP.
+- Use Node.js (JavaScript-based) for server-side scripting and API development.
+- Collaborate with UI/UX teams using Figma and Adobe XD for design and prototyping.
+- Use Git and GitHub for version control and collaborative development.
+- Set up and manage local server hosting environments using XAMPP/WAMP.
+- Develop and test Android applications using Android Studio.
+- Write and debug code using VS Code as the primary IDE and editor.
+- Build and contribute to projects such as web-based booking systems, face detection systems using OpenCV, and mobile or PG Finder applications with enhanced UI/UX.
+- Participate in cybersecurity awareness initiatives and attend workshops and seminars.
+- Perform data analysis tasks using Python and R.
+- Collaborate effectively in cross-functional teams and communicate clearly in group settings.
+
+---
+
+Required Skills:
+
+Programming Languages:
+- Python
+- C
+- C++
+- JAVA
+- PHP
+- Node.js (JavaScript-based)
+
+Web Development:
+- Frontend: HTML, CSS, JavaScript
+- Backend: Node.js, PHP
+
+Database Management:
+- MySQL
+- MongoDB
+
+Tools and Technologies:
+- IDEs and Editors: VS Code, Android Studio
+- Design and Prototyping: Figma, Adobe XD
+- Version Control: Git, GitHub
+- XAMPP/WAMP for local server hosting
+
+---
+
+Educational Qualifications:
+
+- Master's Degree (PG) in Computer Applications or equivalent — 2025
+  Preferred: SGPA of 9.0 or above (Semester 1 and Semester 2)
+- Bachelor's Degree (UG) in Computer Science or related field — 2024
+  Preferred: Aggregate of 8.5 or above
+- HSC (Class 12) from a recognized board — 2021
+- SSLC (Class 10) from a recognized board — 2019
+
+---
+
+Preferred Certifications (Any of the following are a strong advantage):
+
+- Machine Learning: Classification by University of Washington
+- HTML, CSS, and Javascript for Web Developers by Johns Hopkins University
+- Teamwork Skills: Communicating Effectively in Groups
+- Data Analysis with R by IBM
+- Python Project for Data Science by IBM
+- Introduction to Databases from Meta
+- Microsoft Applied Skills certification in creating and managing canvas apps with Power Apps by Microsoft
+- Introduction to Java and Object-Oriented Programming by University of Pennsylvania
+
+---
+
+Preferred Project Experience:
+
+- DJ booking system using PHP: A web application that allows users to browse, book, and manage DJ services for events online.
+- Face detection system using OpenCV: A face detection-based attendance system using OpenCV in Java to automate and streamline student attendance tracking.
+- PG Finder App with Enhanced UI/UX: A PG Finder app designed with a focus on intuitive UI/UX to help college students easily locate and compare nearby paying guest accommodations.
+
+---
+
+Workshops and Seminars:
+
+- Exposure to cybersecurity concepts (e.g., CloudSEK Cybersecurity Seminar or equivalent) is a plus.
+
+---
+
+Soft Skills Required:
+
+- Effective communication in group settings and cross-functional teams
+- Strong teamwork and collaboration skills
+- Eagerness to learn and apply new technologies
+- Attention to detail and problem-solving ability
+- Active participation in hackathons, coding platforms (LeetCode, HackerRank), and open source (GitHub)
+
+---
+
+Online Profiles (Preferred):
+
+- Active GitHub profile with project repositories
+- LeetCode and/or HackerRank profiles demonstrating problem-solving skills
+- LinkedIn profile
+
+---
+
+What We Offer:
+
+- Hands-on experience with real-world full-stack development projects
+- Mentorship from senior developers
+- Certification and upskilling support
+- Collaborative work environment in Bangalore, Karnataka
+- Competitive fresher compensation package

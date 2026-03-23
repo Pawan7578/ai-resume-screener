@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}EDA — AI Resume Matcher{% endblock %}
+{% block body %}
+<nav class="navbar">
+    <a href="/dashboard" class="navbar-brand">
+        <div class="logo-icon">📊</div> AI Resume Matcher
+    </a>
+    <div class="navbar-nav">
+        <a href="/dashboard" class="nav-link">← Dashboard</a>
+        <a href="/logout"    class="nav-badge">Sign Out</a>
+    </div>
+</nav>
+
+<div class="page">
+    <div class="flex justify-between items-center mb-24" style="flex-wrap:wrap;gap:16px">
+        <div class="page-header" style="margin:0">
+            <h1>📈 Exploratory Data Analysis</h1>
+            <p>Visual insights from the {{ "2400+" if charts_exist else "" }} resume training dataset</p>
+        </div>
+        <button class="btn btn-primary" id="gen-btn" onclick="generateCharts()">
+            {% if charts_exist %}🔄 Regenerate Charts{% else %}🎨 Generate Charts{% endif %}
+        </button>
+    </div>
+
+    {% if charts_exist %}
+
+    <div class="grid-2">
+        {% for chart in charts %}
+        <div class="card {% if loop.last and loop.index is odd %}{% endif %}"
+             style="{% if loop.last and loop.index is odd %}grid-column:1/-1{% endif %}">
+            <div class="card-title" style="margin-bottom:16px">
+                {% if '1_' in chart %}📊 Resume Count by Job Category
+                {% elif '2_' in chart %}📉 Word Count Distribution
+                {% elif '3_' in chart %}🔧 Top 20 Skills in Dataset
+                {% elif '4_' in chart %}📏 Average Resume Length by Category
+                {% elif '5_' in chart %}🔥 Skill Co-occurrence Heatmap
+                {% else %}{{ chart }}{% endif %}
+            </div>
+            <img src="/eda/chart/{{ chart }}" alt="{{ chart }}" loading="lazy"
+                 style="width:100%;border-radius:8px;border:1px solid var(--border)">
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="card" style="text-align:center;padding:70px 40px">
+        <div style="font-size:52px;margin-bottom:18px">📊</div>
+        <div style="font-size:20px;font-weight:700;margin-bottom:8px">No charts generated yet</div>
+        <p class="text-muted mb-24" style="max-width:400px;margin:0 auto 24px">
+            Click "Generate Charts" to create 5 EDA visualizations from the resume dataset.<br>
+            Make sure <code style="font-family:monospace;background:var(--surface-2);padding:2px 6px;border-radius:4px">dataset/resume_dataset.csv</code> is present.
+        </p>
+        <button class="btn btn-primary" onclick="generateCharts()">🎨 Generate Charts Now</button>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function generateCharts() {
+    const btn = document.getElementById('gen-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Generating...';
+
+    fetch('/eda/generate', { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message);
+            setTimeout(() => location.reload(), 1400);
+        } else {
+            showToast(data.error, 'error');
+            btn.disabled = false;
+            btn.textContent = '🎨 Generate Charts';
+        }
+    })
+    .catch(e => {
+        showToast('Error: ' + e, 'error');
+        btn.disabled = false;
+        btn.textContent = '🎨 Generate Charts';
+    });
+}
+</script>
+{% endblock %}

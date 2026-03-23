@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In — AI Resume Matcher</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary:      #4f46e5;
+            --primary-glow: rgba(79,70,229,0.35);
+            --secondary:    #06b6d4;
+            --success:      #10b981;
+            --danger:       #ef4444;
+            --text:         #0f172a;
+            --muted:        #64748b;
+            --border:       #e2e8f0;
+            --surface:      #ffffff;
+            --surface-2:    #f8fafc;
+            --radius:       12px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            background: #0f0f1a;
+            overflow: hidden;
+        }
+
+        /* LEFT PANEL */
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 40%, rgba(79,70,229,0.25) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 80% at 80% 70%, rgba(6,182,212,0.15) 0%, transparent 70%);
+        }
+        .left-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0);
+            background-size: 32px 32px;
+        }
+        .left-content { position: relative; z-index: 1; }
+        .brand-mark {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 48px;
+        }
+        .brand-icon {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 8px 24px var(--primary-glow);
+        }
+        .brand-name { font-size: 18px; font-weight: 700; color: white; }
+
+        .left-headline {
+            font-size: 42px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.15;
+            margin-bottom: 20px;
+        }
+        .left-headline span {
+            background: linear-gradient(135deg, #818cf8, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .left-sub { font-size: 16px; color: rgba(255,255,255,0.55); line-height: 1.7; margin-bottom: 44px; }
+
+        .feature-list { display: flex; flex-direction: column; gap: 14px; }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255,255,255,0.75);
+            font-size: 14px;
+        }
+        .feature-dot {
+            width: 8px; height: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* RIGHT PANEL */
+        .right-panel {
+            width: 480px;
+            background: var(--surface);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 48px 44px;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .panel-header { margin-bottom: 28px; }
+        .panel-header h2 { font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .panel-header p  { font-size: 14px; color: var(--muted); }
+
+        /* TAB BAR */
+        .auth-tabs {
+            display: flex;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 4px;
+            gap: 3px;
+            margin-bottom: 28px;
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 9px 10px;
+            border: none;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            color: var(--muted);
+            background: transparent;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .auth-tab.active {
+            background: var(--surface);
+            color: var(--primary);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+        }
+
+        /* PANELS */
+        .auth-panel {
+            display: none;
+            animation: slideIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .auth-panel.active { display: block; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(10px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        /* FORM ELEMENTS */
+        .form-group { margin-bottom: 16px; }
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 7px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-family: 'Outfit', sans-serif;
+            color: var(--text);
+            background: var(--surface);
+            outline: none;
+            transition: border-color 0.18s, box-shadow 0.18s;
+        }
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            margin-top: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(79,70,229,0.3);
+        }
+        .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,70,229,0.4); }
+        .btn-submit:active { transform: translateY(0); }
+
+        /* ADMIN TAB STYLING */
+        .admin-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(79,70,229,0.08);
+            border: 1px solid rgba(79,70,229,0.2);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 18px;
+        }
+
+        .alert {
+            padding: 11px 14px;
+            border-radius: 9px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .alert-error   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+        .alert-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .switch-link {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .switch-link a {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .switch-link a:hover { text-decoration: underline; }
+
+        .input-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        /* Floating shapes on left panel */
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            pointer-events: none;
+        }
+        .shape-1 { width: 300px; height: 300px; background: rgba(79,70,229,0.2); top: -100px; right: -100px; }
+        .shape-2 { width: 200px; height: 200px; background: rgba(6,182,212,0.15); bottom: 50px; left: -50px; }
+
+        @media (max-width: 900px) {
+            .left-panel { display: none; }
+            .right-panel { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- LEFT BRANDING PANEL -->
+<div class="left-panel">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="left-content">
+        <div class="brand-mark">
+            <div class="brand-icon">📊</div>
+            <span class="brand-name">AI Resume Matcher</span>
+        </div>
+
+        <h1 class="left-headline">
+            Smart Hiring,<br>
+            <span>Powered by AI</span>
+        </h1>
+        <p class="left-sub">
+            Match resumes to job descriptions with ML precision.<br>
+            Find the best candidates in seconds, not hours.
+        </p>
+
+        <div class="feature-list">
+            <div class="feature-item"><div class="feature-dot"></div>TF-IDF + BERT hybrid matching engine</div>
+            <div class="feature-item"><div class="feature-dot"></div>4 trained ML classifiers with comparison</div>
+            <div class="feature-item"><div class="feature-dot"></div>Dynamic ATS scoring & skill gap analysis</div>
+            <div class="feature-item"><div class="feature-dot"></div>Downloadable PDF reports per candidate</div>
+            <div class="feature-item"><div class="feature-dot"></div>User portal for self-service resume checks</div>
+        </div>
+    </div>
+</div>
+
+<!-- RIGHT FORM PANEL -->
+<div class="right-panel">
+    <div class="panel-header">
+        <h2>Welcome back</h2>
+        <p>Sign in to your account or create a new one</p>
+    </div>
+
+    <!-- TAB SWITCHER -->
+    <div class="auth-tabs">
+        <button class="auth-tab {% if tab == 'admin' or not tab %}active{% endif %}"
+                onclick="switchTab('admin')" id="tab-admin">⚙️ Admin</button>
+        <button class="auth-tab {% if tab == 'user' %}active{% endif %}"
+                onclick="switchTab('user')" id="tab-user">👤 User Login</button>
+        <button class="auth-tab {% if tab == 'register' %}active{% endif %}"
+                onclick="switchTab('register')" id="tab-register">✨ Register</button>
+    </div>
+
+    <!-- ADMIN LOGIN -->
+    <div class="auth-panel {% if tab == 'admin' or not tab %}active{% endif %}" id="panel-admin">
+        <div class="admin-badge">🔐 Admin Access</div>
+
+        {% if error and (tab == 'admin' or not tab) %}
+        <div class="alert alert-error">⚠️ {{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="/">
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input class="form-input" type="text" name="username" placeholder="admin" required autofocus>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input class="form-input" type="password" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-submit">Sign in as Admin →</button>
+        </form>
+    </div>
+
+    <!-- USER LOGIN -->
+    <div class="auth-panel {% if tab == 'user' %}active{% endif %}" id="panel-user">
+        {% if error and tab == 'user' %}
+        <div class="alert alert-error">⚠️ {{ error }}</div>
+        {% endif %}
+        {% if registered %}
+        <div class="alert alert-success">✅ Account created! Please sign in.</div>
+        {% endif %}
+
+        <form method="POST" action="/user/login">
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input class="form-input" type="text" name="username" placeholder="Your username" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input class="form-input" type="password" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-submit">Sign In →</button>
+        </form>
+
+        <div class="switch-link">
+            New here? <a href="#" onclick="switchTab('register')">Create an account</a>
+        </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="auth-panel {% if tab == 'register' %}active{% endif %}" id="panel-register">
+        {% if reg_error %}
+        <div class="alert alert-error">⚠️ {{ reg_error }}</div>
+        {% endif %}
+
+        <form method="POST" action="/user/register">
+            <div class="input-grid-2">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input class="form-input" type="text" name="username" placeholder="Choose one" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input class="form-input" type="email" name="email" placeholder="you@email.com" required>
+                </div>
+            </div>
+            <div class="input-grid-2">
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input class="form-input" type="password" name="password" placeholder="Min 6 chars" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm</label>
+                    <input class="form-input" type="password" name="confirm" placeholder="Repeat" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-submit">Create Account →</button>
+        </form>
+
+        <div class="switch-link">
+            Already have an account? <a href="#" onclick="switchTab('user')">Sign in</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchTab(name) {
+    ['admin','user','register'].forEach(t => {
+        document.getElementById('tab-' + t).classList.toggle('active', t === name);
+        document.getElementById('panel-' + t).classList.toggle('active', t === name);
+    });
+}
+// Auto-switch to correct tab based on URL
+const urlTab = new URLSearchParams(location.search).get('tab');
+if (urlTab) switchTab(urlTab);
+</script>
+</body>
+</html>

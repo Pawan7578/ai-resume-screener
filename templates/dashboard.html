@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — AI Resume Matcher{% endblock %}
+{% block body %}
+<nav class="navbar">
+    <a href="/dashboard" class="navbar-brand">
+        <div class="logo-icon">📊</div> AI Resume Matcher
+    </a>
+    <div class="navbar-nav">
+        <a href="/train"        class="nav-link">🤖 Train</a>
+        <a href="/model-report" class="nav-link">📊 Models</a>
+        <a href="/user/login" target="_blank" class="nav-link">👤 User Portal</a>
+        <a href="/logout" class="nav-badge">Sign Out</a>
+    </div>
+</nav>
+
+<div class="page-sm">
+    {% if model_trained %}
+    <div class="status-bar ok">✅ <strong>ML models trained and ready</strong> — system fully operational</div>
+    {% else %}
+    <div class="status-bar warn">⚠️ Models not trained. <a href="/train"><strong>Train now →</strong></a></div>
+    {% endif %}
+
+    <div class="page-header">
+        <h1>Resume Analysis</h1>
+        <p>Rank multiple candidates against a job description using AI + ML scoring</p>
+    </div>
+
+    <div class="card mb-24">
+        <div class="card-title">🚀 Analyze Candidates</div>
+        <div class="card-subtitle">Upload resumes and paste or upload a job description to get ranked results</div>
+
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label class="form-label">Job Description</label>
+                <div class="tab-bar">
+                    <button type="button" class="tab-btn active" onclick="jdTab('paste',this)">📝 Paste Text</button>
+                    <button type="button" class="tab-btn"        onclick="jdTab('file',this)">📁 Upload .txt</button>
+                </div>
+                <div class="tab-panel active" id="jd-paste">
+                    <textarea class="form-textarea" name="jd_text" style="min-height:130px"
+                        placeholder="Paste job description here…&#10;&#10;We are looking for a Python developer with machine learning, SQL, Flask, HTML, CSS, JavaScript knowledge."></textarea>
+                </div>
+                <div class="tab-panel" id="jd-file">
+                    <input class="file-drop" type="file" name="jd" accept=".txt">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Resumes <span class="hint font-bold" style="font-weight:400;color:var(--text-faint)">— PDF or DOCX, select multiple</span></label>
+                <input class="file-drop" type="file" name="resumes" multiple accept=".pdf,.docx" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full">🔍 Analyze Resumes</button>
+        </form>
+    </div>
+
+    <div class="grid-3">
+        <a href="/train" class="stat-card" style="text-decoration:none">
+            <div class="stat-icon">🤖</div>
+            <div class="stat-label">Train Models</div>
+            <div class="stat-sub">NB · LR · SVM · KNN</div>
+        </a>
+        <a href="/model-report" class="stat-card" style="text-decoration:none">
+            <div class="stat-icon">📊</div>
+            <div class="stat-label">Model Report</div>
+            <div class="stat-sub">Accuracy comparison</div>
+        </a>
+        <a href="/download" class="stat-card" style="text-decoration:none">
+            <div class="stat-icon">⬇️</div>
+            <div class="stat-label">Last Report</div>
+            <div class="stat-sub">Download Excel</div>
+        </a>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function jdTab(type, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ['paste','file'].forEach(t => document.getElementById('jd-'+t).classList.toggle('active', t===type));
+}
+</script>
+{% endblock %}
