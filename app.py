@@ -8,11 +8,6 @@ from flask import (Flask, render_template, request, redirect,
 from dotenv import load_dotenv
 import pandas as pd
 
-# ── Clear pycache on startup ──────────────────────────────
-pycache = os.path.join(os.path.dirname(__file__), '__pycache__')
-if os.path.exists(pycache):
-    shutil.rmtree(pycache)
-
 load_dotenv()
 
 from matcher         import final_score
